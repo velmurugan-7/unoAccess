@@ -61,7 +61,7 @@ export const rotateClientSecret = async (req: Request, res: Response): Promise<v
 
 // ── User Management ────────────────────────────────────────────────────────
 export const listUsers = async (req: Request, res: Response): Promise<void> => {
-  const { search, page = 1, limit = 20 } = req.query as Record<string, string>;
+  const { search, page = '1', limit = '20' } = req.query as Record<string, string>;
   const pageNum = parseInt(page);
   const limitNum = Math.min(parseInt(limit), 100);
   const query = search
