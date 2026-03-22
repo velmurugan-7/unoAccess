@@ -4,7 +4,10 @@
 // interface User {
 //   id: string; name: string; email: string; role: string;
 //   avatarUrl?: string; twoFactorEnabled?: boolean; isVerified?: boolean;
-//   emailPreferences?: { securityAlerts: boolean; loginNotifications: boolean; productUpdates: boolean; weeklyDigest: boolean; };
+//   emailPreferences?: {
+//     securityAlerts: boolean; loginNotifications: boolean;
+//     productUpdates: boolean; weeklyDigest: boolean;
+//   };
 // }
 
 // interface AuthState {
@@ -15,7 +18,7 @@
 //   updateProfile: (data: Partial<User>) => Promise<void>;
 // }
 
-// export const useAuthStore = create<AuthState>((set) => ({
+// export const useAuthStore = create<AuthState>((set, get) => ({
 //   user: null, isLoading: true, isAuthenticated: false,
 
 //   fetchProfile: async () => {
@@ -30,8 +33,14 @@
 //   },
 
 //   login: async (email, password, twoFaCode) => {
-//     const { data } = await api.post('/api/auth/login', { email, password, ...(twoFaCode ? { twoFaCode } : {}) });
-//     set({ user: data.user, isAuthenticated: true });
+//     // Step 1: authenticate and get session cookie
+//     await api.post('/api/auth/login', {
+//       email, password,
+//       ...(twoFaCode ? { twoFaCode } : {}),
+//     });
+//     // Step 2: fetch FULL profile so avatarUrl and all fields are populated
+//     // This is the fix for avatar not appearing after login without refresh
+//     await get().fetchProfile();
 //   },
 
 //   logout: async () => {
@@ -58,7 +67,10 @@ interface User {
 }
 
 interface AuthState {
-  user: User | null; isLoading: boolean; isAuthenticated: boolean;
+  user: User | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  accessToken: string | null;  // ← new
   login: (email: string, password: string, twoFaCode?: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchProfile: () => Promise<void>;
@@ -66,7 +78,10 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null, isLoading: true, isAuthenticated: false,
+  user: null,
+  isLoading: true,
+  isAuthenticated: false,
+  accessToken: null,  // ← new
 
   fetchProfile: async () => {
     try {
@@ -80,19 +95,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email, password, twoFaCode) => {
-    // Step 1: authenticate and get session cookie
-    await api.post('/api/auth/login', {
+    // Step 1: authenticate — backend returns accessToken in body now
+    const { data } = await api.post('/api/auth/login', {
       email, password,
       ...(twoFaCode ? { twoFaCode } : {}),
     });
-    // Step 2: fetch FULL profile so avatarUrl and all fields are populated
-    // This is the fix for avatar not appearing after login without refresh
+    // Step 2: store the access token so interceptor can attach it
+    if (data.accessToken) {
+      set({ accessToken: data.accessToken });
+    }
+    // Step 3: fetch full profile so avatarUrl and all fields are populated
     await get().fetchProfile();
   },
 
   logout: async () => {
     await api.post('/api/auth/logout');
-    set({ user: null, isAuthenticated: false });
+    set({ user: null, isAuthenticated: false, accessToken: null });
   },
 
   updateProfile: async (updates) => {
