@@ -13,7 +13,8 @@ import { config } from './env';
 export const cookieOptions = {
   httpOnly: true,
   secure: config.isProduction,
-  sameSite: 'lax' as const,
-  domain: config.isProduction ? process.env.COOKIE_DOMAIN : undefined,
+  // sameSite: 'lax' as const,
+  sameSite: config.isProduction ? 'none' as const : 'lax' as const,
+  // domain: config.isProduction ? process.env.COOKIE_DOMAIN : undefined,
   path: '/',
 };

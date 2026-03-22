@@ -29,7 +29,8 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
       try {
-        await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        // await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/refresh`, {}, { withCredentials: true });
         processQueue(null);
         return api(originalRequest);
       } catch (e) {
