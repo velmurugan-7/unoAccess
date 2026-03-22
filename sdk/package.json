@@ -1,0 +1,26 @@
+{
+  "name": "unoaccess-monitor",
+  "version": "1.0.0",
+  "description": "Performance monitoring SDK for UnoAccess SSO-connected apps",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "keywords": ["unoaccess", "monitoring", "performance", "sso"],
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "express": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "express": { "optional": true }
+  }
+}
