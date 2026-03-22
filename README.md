@@ -1,20 +1,20 @@
-# UnoAccess v3 — Secure SSO Platform
+# UnoAccess — Secure SSO Platform
 
 A production-ready Single Sign-On system with OAuth 2.0 / OIDC, performance monitoring, real-time alerts, SLO tracking, API keys, and a full light-mode SaaS UI.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Backend
-cd back
+cd backend
 cp .env.example .env      # fill in your values
 npm install
 npm run dev               # starts on :5000
 
 # Frontend
-cd front
+cd frontend
 cp .env.example .env      # set VITE_API_URL if needed
 npm install
 npm run dev               # starts on :5173
@@ -24,7 +24,7 @@ Open http://localhost:5173 — you'll see the landing page.
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 unoaccess/
@@ -52,7 +52,7 @@ unoaccess/
 
 ---
 
-## ✨ What's New in v3
+## 
 
 ### Frontend Redesign
 - **Light-mode SaaS aesthetic** — Cloudflare/Linear style with DM Sans font, clean cards, subtle shadows
@@ -104,7 +104,7 @@ unoaccess/
 
 ---
 
-## 🧪 Testing New Features
+## Testing New Features
 
 ### 1. API Keys
 ```
@@ -152,7 +152,7 @@ Then view at `/app/:clientId/errors`.
 
 ---
 
-## 🔐 Environment Variables
+##  Environment Variables
 
 All existing variables remain unchanged. See `back/.env.example` for the full list.
 
@@ -160,7 +160,7 @@ No new required variables are needed for v3 features.
 
 ---
 
-## 🏗️ Deployment
+##  Deployment
 
 ### Backend (Render / Railway / Fly.io)
 ```bash
@@ -177,7 +177,7 @@ cd front && npm run build
 
 ---
 
-## 📦 Tech Stack
+##  Tech Stack
 
 | Layer | Tech |
 |-------|------|
