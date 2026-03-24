@@ -1,6 +1,7 @@
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Zap, Globe, Lock, BarChart3, Key, ArrowRight, Check, ChevronRight, Star } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Zap, Globe, Lock, BarChart3, Key, ArrowRight, Check, ChevronRight, Star, LayoutDashboard, LogOut } from 'lucide-react';
 import { Logo } from '../components/ui';
+import { useAuthStore } from '../store/authStore';
 
 const features = [
   { icon: <Lock className="w-5 h-5" />, title: 'OAuth 2.0 / OIDC', desc: 'Industry-standard authorization with multi-account chooser, PKCE, and token introspection built in.' },
@@ -24,27 +25,70 @@ const testimonials = [
 ];
 
 export default function LandingPage() {
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const initials = user?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'U';
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-white font-[DM_Sans,system-ui,sans-serif]">
+
       {/* ── Topbar ─────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-[var(--c-border)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Logo size="sm" />
+
           <nav className="hidden md:flex items-center gap-6 text-sm text-[var(--c-text2)]">
             {['Pricing', 'Docs', 'Status'].map(l => (
               <a key={l} href={`/${l.toLowerCase()}`} className="hover:text-[var(--c-text)] transition-colors">{l}</a>
             ))}
           </nav>
-          <div className="flex items-center gap-2">
-            <Link to="/login" className="btn btn-secondary btn-sm">Sign in</Link>
-            <Link to="/signup" className="btn btn-primary btn-sm">Get started</Link>
-          </div>
+
+          {/* ── Auth-aware right section ── */}
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-2">
+              {/* Avatar + name */}
+              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[var(--c-surface2)] border border-[var(--c-border)]">
+                <div className="w-6 h-6 rounded-full bg-[var(--c-blue)] text-white text-[10px] font-bold flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {user.avatarUrl
+                    ? <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    : initials}
+                </div>
+                <span className="text-sm font-medium text-[var(--c-text)] hidden sm:block max-w-[100px] truncate">
+                  {user.name?.split(' ')[0]}
+                </span>
+              </div>
+              {/* Go to dashboard */}
+              <Link to="/dashboard" className="btn btn-primary btn-sm gap-1.5">
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                Dashboard
+              </Link>
+              {/* Logout */}
+              <button
+                onClick={handleLogout}
+                className="btn btn-secondary btn-sm gap-1.5"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link to="/login" className="btn btn-secondary btn-sm">Sign in</Link>
+              <Link to="/signup" className="btn btn-primary btn-sm">Get started</Link>
+            </div>
+          )}
         </div>
       </header>
 
       {/* ── Hero ───────────────────────────────────────── */}
       <section className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 overflow-hidden">
-        {/* subtle grid bg */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e4e7ec_1px,transparent_1px),linear-gradient(to_bottom,#e4e7ec_1px,transparent_1px)] bg-[size:40px_40px] opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
@@ -61,19 +105,40 @@ export default function LandingPage() {
             Drop-in SSO with OAuth 2.0 & OIDC, two-factor auth, performance monitoring, and a full admin panel.
             From zero to production auth in under an hour.
           </p>
+
+          {/* ── Auth-aware CTA buttons ── */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-9">
-            <Link to="/signup" className="btn btn-primary btn-lg gap-2">
-              Start for free <ArrowRight className="w-4 h-4" />
-            </Link>
-            <a href="/docs" className="btn btn-secondary btn-lg">View docs</a>
+            {isAuthenticated ? (
+              <>
+                <Link to="/dashboard" className="btn btn-primary btn-lg gap-2">
+                  Go to Dashboard <LayoutDashboard className="w-4 h-4" />
+                </Link>
+                <a href="/docs" className="btn btn-secondary btn-lg">View docs</a>
+              </>
+            ) : (
+              <>
+                <Link to="/signup" className="btn btn-primary btn-lg gap-2">
+                  Start for free <ArrowRight className="w-4 h-4" />
+                </Link>
+                <a href="/docs" className="btn btn-secondary btn-lg">View docs</a>
+              </>
+            )}
           </div>
-          <p className="text-xs text-[var(--c-text3)] mt-4">No credit card required · Free tier forever</p>
+
+          {/* Show welcome back message if logged in */}
+          {isAuthenticated && user ? (
+            <p className="text-sm text-[var(--c-blue)] mt-4 font-medium">
+              👋 Welcome back, {user.name?.split(' ')[0]}!
+            </p>
+          ) : (
+            <p className="text-xs text-[var(--c-text3)] mt-4">No credit card required · Free tier forever</p>
+          )}
         </div>
       </section>
 
       {/* ── Social proof strip ─────────────────────────── */}
       <section className="border-y border-[var(--c-border)] bg-[var(--c-surface2)] py-8">
-        <div className="max-w-5xl mx-auto px-6 text-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <p className="text-xs font-medium text-[var(--c-text3)] uppercase tracking-widest mb-6">Trusted by teams at</p>
           <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale">
             {['Acme Corp', 'Veritas', 'Finverse', 'Logistix', 'Synapse', 'DataFlow'].map(n => (
@@ -84,12 +149,12 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features ───────────────────────────────────── */}
-      <section className="py-24 max-w-6xl mx-auto px-6">
+      <section className="py-24 max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-14">
           <h2 className="text-3xl font-bold tracking-tight text-[var(--c-text)]">Everything you need, nothing you don't</h2>
           <p className="text-[var(--c-text3)] mt-3 max-w-xl mx-auto">A complete authentication platform that grows with your product. No vendor lock-in, full code ownership.</p>
         </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map(f => (
             <div key={f.title} className="card card-p hover:shadow-md transition-shadow group">
               <div className="w-9 h-9 rounded-lg bg-[var(--c-blue-lt)] text-[var(--c-blue)] flex items-center justify-center mb-4 group-hover:bg-[var(--c-blue)] group-hover:text-white transition-colors">
@@ -104,12 +169,12 @@ export default function LandingPage() {
 
       {/* ── Code preview ───────────────────────────────── */}
       <section className="bg-[var(--c-surface2)] border-y border-[var(--c-border)] py-20">
-        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <span className="badge badge-blue mb-4">Quick start</span>
             <h2 className="text-2xl font-bold tracking-tight text-[var(--c-text)] mb-4">Integrate in minutes</h2>
             <p className="text-[var(--c-text3)] text-sm leading-relaxed mb-6">Install the monitoring SDK, point it at your UnoAccess instance, and start collecting data immediately — no configuration files needed.</p>
-            <a href="/docs/quickstart" className="btn btn-primary btn-sm gap-1.5">
+            <a href="/docs" className="btn btn-primary btn-sm gap-1.5">
               Read the quickstart <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -128,7 +193,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ────────────────────────────────────── */}
-      <section className="py-24 max-w-5xl mx-auto px-6" id="pricing">
+      <section className="py-24 max-w-5xl mx-auto px-4 sm:px-6" id="pricing">
         <div className="text-center mb-14">
           <h2 className="text-3xl font-bold tracking-tight text-[var(--c-text)]">Simple, transparent pricing</h2>
           <p className="text-[var(--c-text3)] mt-3">Start free, upgrade when you're ready.</p>
@@ -149,7 +214,13 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link to={plan.href} className={`btn w-full ${plan.highlighted ? 'btn-primary' : 'btn-secondary'}`}>{plan.cta}</Link>
+              {/* If logged in, pricing CTAs go to dashboard */}
+              <Link
+                to={isAuthenticated ? '/dashboard' : plan.href}
+                className={`btn w-full ${plan.highlighted ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                {isAuthenticated ? 'Go to Dashboard' : plan.cta}
+              </Link>
             </div>
           ))}
         </div>
@@ -157,7 +228,7 @@ export default function LandingPage() {
 
       {/* ── Testimonials ───────────────────────────────── */}
       <section className="bg-[var(--c-surface2)] border-y border-[var(--c-border)] py-20">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold tracking-tight text-[var(--c-text)]">What developers say</h2>
           </div>
@@ -179,12 +250,18 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────── */}
-      <section className="py-24 text-center max-w-3xl mx-auto px-6">
+      <section className="py-24 text-center max-w-3xl mx-auto px-4 sm:px-6">
         <h2 className="text-3xl font-bold tracking-tight text-[var(--c-text)] mb-4">Ready to ship secure auth?</h2>
         <p className="text-[var(--c-text3)] mb-8">Join hundreds of teams using UnoAccess to handle authentication, monitoring, and more.</p>
-        <Link to="/signup" className="btn btn-primary btn-lg gap-2">
-          Get started for free <ArrowRight className="w-4 h-4" />
-        </Link>
+        {isAuthenticated ? (
+          <Link to="/dashboard" className="btn btn-primary btn-lg gap-2">
+            Go to Dashboard <LayoutDashboard className="w-4 h-4" />
+          </Link>
+        ) : (
+          <Link to="/signup" className="btn btn-primary btn-lg gap-2">
+            Get started for free <ArrowRight className="w-4 h-4" />
+          </Link>
+        )}
       </section>
 
       {/* ── Footer ─────────────────────────────────────── */}
@@ -194,7 +271,7 @@ export default function LandingPage() {
             <Logo size="sm" />
             <p className="text-xs text-[var(--c-text3)] mt-2">Secure SSO for modern applications</p>
           </div>
-          <div className="flex gap-12 text-sm">
+          <div className="flex gap-8 sm:gap-12 text-sm flex-wrap">
             {[['Product', ['Pricing', 'Status', 'Changelog']], ['Developers', ['Documentation', 'API Reference', 'SDKs']], ['Company', ['Privacy', 'Terms', 'Contact']]].map(([cat, links]) => (
               <div key={cat as string}>
                 <p className="font-semibold text-[var(--c-text)] mb-3">{cat}</p>
